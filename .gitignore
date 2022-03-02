@@ -1,7 +1,4 @@
-/example-tree.txt
-/test-startwith.py
-/test.py
-/zipper.py
-/zippings
-*.txt
-*.log
+*
+*/
+!filewalk.py
+!.gitignore
