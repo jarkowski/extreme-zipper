@@ -3,7 +3,6 @@ Script to extract and zip the most recent configuration backups from Extreme
 Management Center Archive.
 """
 
-
 import configparser
 import json
 import sys
@@ -20,6 +19,33 @@ import os
 import zipfile
 import logging
 import logging.handlers
+
+def logWinEvent(type, event_id, event_text):
+    import win32evtlogutil
+    import win32evtlog
+
+    if type == "INFO":
+        try:
+            win32evtlogutil.ReportEvent(
+                "Extreme Zipper script",
+                event_id,
+                eventType=win32evtlog.EVENTLOG_INFORMATION_TYPE,
+                strings=event_text,
+            )
+        except:
+            pass
+    elif type == "ERROR":
+        try:
+            win32evtlogutil.ReportEvent(
+                "Extreme Zipper script",
+                event_id,
+                eventType=win32evtlog.EVENTLOG_ERROR_TYPE,
+                strings=event_text,
+            )
+        except:
+            pass
+
+logWinEvent("ERROR", 50, "Zipfile creation successfull")
 
 
 filewalk_config = configparser.ConfigParser()
