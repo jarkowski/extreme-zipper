@@ -2,3 +2,4 @@
 */
 !filewalk.py
 !.gitignore
+!filewalk.ini
