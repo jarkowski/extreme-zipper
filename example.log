@@ -1,0 +1,16 @@
+DEBUG:root:This message should go to the log file
+INFO:root:So should this
+WARNING:root:And this, too
+ERROR:root:And non-ASCII stuff, too, like Øresund and Malmö
+DEBUG:root:This message should go to the log file
+INFO:root:So should this
+WARNING:root:And this, too
+ERROR:root:And non-ASCII stuff, too, like Øresund and Malmö
+DEBUG:root:This message should go to the log file
+INFO:root:So should this
+WARNING:root:And this, too
+ERROR:root:And non-ASCII stuff, too, like Øresund and Malmö
+2022-03-02 10:13:45,169 - This message should go to the log file
+2022-03-02 10:13:45,169 - So should this
+2022-03-02 10:13:45,169 - And this, too
+2022-03-02 10:13:45,169 - And non-ASCII stuff, too, like Øresund and Malmö
