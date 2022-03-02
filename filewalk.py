@@ -38,13 +38,11 @@ def logWinEvent(type, event_id, event_text):
         except:
             pass
 
-logWinEvent("ERROR", 50, "Zipfile creation successfull")
-
 
 filewalk_config = configparser.ConfigParser()
 filewalk_config.read("filewalk.ini")
 
-EXTREME_ARCHIVE_BASE_DIRECTORY  = filewalk_config.get("config","EXTREME_ARCHIVE_BASE_DIRECTORY")
+EXTREME_ARCHIVE_BASE_DIRECTORY  = filewalk_config.get("config", "EXTREME_ARCHIVE_BASE_DIRECTORY")
 TFTP_PATH                       = filewalk_config.get("config", "TFTP_PATH") 
 RESULTING_ZIP_FILEBASE          = filewalk_config.get("config", "RESULTING_ZIP_FILEBASE")         
 RESULTING_ZIP_EXTENSION         = filewalk_config.get("config", "RESULTING_ZIP_EXTENSION")                   
@@ -83,7 +81,8 @@ for file_path in os.listdir(TFTP_PATH):
     if os.path.exists(joined_path):
         if RESULTING_ZIP_FILEBASE in joined_path:
             os.remove(joined_path)
-            log.info(f"Deleted file: {joined_path}")
+            log.info(f"Deleted old file: {joined_path}")
+            logWinEvent("INFO", 0, [f"Deleted old file {joined_path}"])
         else:
             log.info(f"Skipped file: {joined_path}")
     else:
@@ -129,7 +128,9 @@ log.info(SEPARATOR)
 
 try:
     zipfile.ZipFile(filename_for_zipfile)
-    log.info(f"Zip-file {filename_for_zipfile} saved.")
+    log.info(f"Zip-file {filename_for_zipfile} created.")
     log.info(r"Done.")
+    logWinEvent("INFO", 0, [f"Zip-file {filename_for_zipfile} created."])
 except:
     log.error(r"Zip file error")
+    logWinEvent("ERROR", 50, "Zip file error")
