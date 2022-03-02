@@ -4,4 +4,4 @@
 /zipper.py
 /zippings
 *.txt
-test*
+*.log
