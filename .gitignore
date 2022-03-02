@@ -3,3 +3,5 @@
 /test.py
 /zipper.py
 /zippings
+*.txt
+test*

@@ -3,6 +3,8 @@ Script to extract and zip the most recent configuration backups from Extreme
 Management Center Archive.
 """
 
+import sys
+from asyncio.windows_events import NULL
 from datetime import datetime
 from datetime import date
 from importlib.metadata import files
@@ -14,6 +16,8 @@ from zipfile import ZipFile
 import time
 import os
 import zipfile
+import logging
+import logging.handlers
 
 EXTREME_ARCHIVE_BASE_DIRECTORY  = r"C:\py\zippings"        
 SEARCH_SUBDIRECTORIES           = ["FolderA", "FolderB"]   
@@ -21,30 +25,45 @@ SEARCH_FILE_EXTENSION           = [".zip", ".cfg"]
 TFTP_PATH                       = r"C:\py\zippings\tftp"   
 RESULTING_ZIP_FILEBASE          = r"switchbackup"          
 RESULTING_ZIP_EXTENSION         = r".zip"                  
+LOGFILE                         = r"filwalk-log.txt"   # Can include a path if needed
 TOTAL_CONFIGS_EXPECTED          = 6
+SEPARATOR                       = r"----------------------------------------"
 
-def space(count):
-    print (r" ")
-    print (r"-"*count)
-    print (r" ")
+current_date = str(datetime.now().strftime('%Y_%m_%d'))
+current_date_time = str(datetime.now().strftime('%Y_%m_%d_%H_%M_%S'))
+
+log = logging.getLogger("")
+log.setLevel(logging.DEBUG)
+loghandler_file = logging.handlers.RotatingFileHandler(
+    LOGFILE,
+    maxBytes=(1024*512),
+    backupCount=9
+)
+loghandler_console = logging.StreamHandler(sys.stdout)
+format_of_logmessage_file = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+format_of_logmessage_console = logging.Formatter("%(levelname)s - %(message)s")
+loghandler_file.setFormatter(format_of_logmessage_file)
+loghandler_console.setFormatter(format_of_logmessage_console)
+log.addHandler(loghandler_file)
+log.addHandler(loghandler_console)
 
 folders_containing_configs = []          # List every subdir in SEARCH_SUBDIRECTORIES
 relevant_folders_containing_configs = [] # Most recent enty in every folders_to_search.
-files_to_put_in_zipfile = []                           
+files_to_put_in_zipfile = []             # All files from every relevant folders              
 
-space(40)
+log.info(SEPARATOR)
 
-print(f"Removing old zip-files from TFTP path:")
+log.info(f"Removing old zip-files from TFTP path:")
 for file_path in os.listdir(TFTP_PATH):
     joined_path = os.path.join(TFTP_PATH, file_path)
     if os.path.exists(joined_path):
         if RESULTING_ZIP_FILEBASE in joined_path:
             os.remove(joined_path)
-            print(f"Deleted file: {joined_path}")
+            log.info(f"Deleted file: {joined_path}")
         else:
-            print(f"Skipped file: {joined_path}")
+            log.info(f"Skipped file: {joined_path}")
     else:
-        print(f"File not found for deleting: {joined_path}")
+        log.info(f"File not found for deleting: {joined_path}")
         
 
 for file_or_folder in SEARCH_SUBDIRECTORIES:
@@ -58,9 +77,9 @@ for file_or_folder in SEARCH_SUBDIRECTORIES:
     relevant_folders_containing_configs.append(most_recent_folder)
     folders_containing_configs = []   # Set to zero before next loop for next folder
 
-space(40)
+log.info(SEPARATOR)
 
-print(f"Checking which files to add:")
+log.info(f"Checking which files to add:")
 foldercount = len(relevant_folders_containing_configs)
 for k in range(foldercount):
     for entry in os.listdir(relevant_folders_containing_configs[k]):
@@ -68,28 +87,25 @@ for k in range(foldercount):
             if file_extension in entry:
                 fqdn_and_filename = os.path.join(relevant_folders_containing_configs[k], entry)
                 files_to_put_in_zipfile.append(fqdn_and_filename)
-                print(f"File {entry} has correct extension {file_extension}, adding to list.")
+                log.info(f"File {entry} has correct extension {file_extension}, adding to list.")
 
 
-current_date_time = str(datetime.now().strftime('%Y_%m_%d_%H_%M_%S'))
 filename_for_zipfile = fr"{TFTP_PATH}\{current_date_time}-{RESULTING_ZIP_FILEBASE}{RESULTING_ZIP_EXTENSION}"
 
-space(40)
+log.info(SEPARATOR)
 
 new_zipfile_to_generate = ZipFile(filename_for_zipfile, mode ="w")
-print(f"Generating new zip file {filename_for_zipfile}")
+log.info(f"Generating new zip file {filename_for_zipfile}")
 for n in files_to_put_in_zipfile:
     new_zipfile_to_generate.write(n)
-    print(f"Adding config-file {n} to zipfile.")
+    log.info(f"Adding config-file {n} to zipfile.")
 new_zipfile_to_generate.close
 
-space(40)
+log.info(SEPARATOR)
 
 try:
     zipfile.ZipFile(filename_for_zipfile)
-    print(f"Zip-file {filename_for_zipfile} saved.")
-    print(r"Done.")
+    log.info(f"Zip-file {filename_for_zipfile} saved.")
+    log.info(r"Done.")
 except:
-    print(r"Zip file error")
-
-
+    log.error(r"Zip file error")
