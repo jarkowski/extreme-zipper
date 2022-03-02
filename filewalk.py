@@ -5,6 +5,7 @@ Management Center Archive.
 
 
 import configparser
+import json
 import sys
 from datetime import datetime
 from datetime import date
@@ -25,15 +26,13 @@ filewalk_config = configparser.ConfigParser()
 filewalk_config.read("filewalk.ini")
 
 EXTREME_ARCHIVE_BASE_DIRECTORY  = filewalk_config.get("config","EXTREME_ARCHIVE_BASE_DIRECTORY")
-SEARCH_SUBDIRECTORIES           = ["FolderA", "FolderB"]   
-SEARCH_FILE_EXTENSION           = [".zip", ".cfg"]         
 TFTP_PATH                       = filewalk_config.get("config", "TFTP_PATH") 
 RESULTING_ZIP_FILEBASE          = filewalk_config.get("config", "RESULTING_ZIP_FILEBASE")         
 RESULTING_ZIP_EXTENSION         = filewalk_config.get("config", "RESULTING_ZIP_EXTENSION")                   
 LOGFILE                         = filewalk_config.get("config", "LOGFILE") 
+SEARCH_SUBDIRECTORIES           = json.loads(filewalk_config.get("config", "SEARCH_SUBDIRECTORIES"))
+SEARCH_FILE_EXTENSION           = json.loads(filewalk_config.get("config", "SEARCH_FILE_EXTENSION"))
 SEPARATOR                       = r"----------------------------------------"
-
-
 
 current_date = str(datetime.now().strftime('%Y_%m_%d'))
 current_date_time = str(datetime.now().strftime('%Y_%m_%d_%H_%M_%S'))
