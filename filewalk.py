@@ -15,7 +15,7 @@ import logging.handlers
 
 APP_FRIENDLYNAME = r"Filewalk Extreme Zipper script"
 
-def logWinEvent(type, event_id, event_text):
+def logWinEvent(type, event_text):
     import win32evtlogutil
     import win32evtlog
 
@@ -23,7 +23,7 @@ def logWinEvent(type, event_id, event_text):
         try:
             win32evtlogutil.ReportEvent(
                 APP_FRIENDLYNAME,
-                event_id,
+                0,
                 eventType=win32evtlog.EVENTLOG_INFORMATION_TYPE,
                 strings=event_text,
             )
@@ -33,7 +33,7 @@ def logWinEvent(type, event_id, event_text):
         try:
             win32evtlogutil.ReportEvent(
                 APP_FRIENDLYNAME,
-                event_id,
+                50,
                 eventType=win32evtlog.EVENTLOG_ERROR_TYPE,
                 strings=event_text,
             )
@@ -84,11 +84,12 @@ for file_path in os.listdir(TFTP_PATH):
         if RESULTING_ZIP_FILEBASE in joined_path:
             os.remove(joined_path)
             log.info(f"Deleted old file: {joined_path}")
-            logWinEvent("INFO", 0, [f"Deleted old file {joined_path}"])
+            logWinEvent("INFO", [f"Deleted old file {joined_path}"])
         else:
             log.info(f"Skipped file: {joined_path}")
     else:
-        log.info(f"File not found for deleting: {joined_path}")
+        log.error(f"The TFTP-Path {joined_path} could not be found.")
+        logWinEvent("ERROR", [f"The TFTP-Path {joined_path} could not be found."])
         
 
 for file_or_folder in SEARCH_SUBDIRECTORIES:
@@ -132,7 +133,7 @@ try:
     zipfile.ZipFile(filename_for_zipfile)
     log.info(f"Zip-file {filename_for_zipfile} created.")
     log.info(r"Done.")
-    logWinEvent("INFO", 0, [f"Zip-file {filename_for_zipfile} created."])
+    logWinEvent("INFO", [f"Zip-file {filename_for_zipfile} created."])
 except:
     log.error(r"Zip file error")
-    logWinEvent("ERROR", 50, "Zip file error")
+    logWinEvent("ERROR", "Zip file error")
