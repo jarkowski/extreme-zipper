@@ -118,16 +118,27 @@ if not (os.path.exists(EXTREME_ARCHIVE_BASE_DIRECTORY)):
     logWinEvent("ERROR", [f"The base directory {EXTREME_ARCHIVE_BASE_DIRECTORY} could not be found."])
     sys.exit(f"The base directory {EXTREME_ARCHIVE_BASE_DIRECTORY} could not be found.")
 
+log.info(SEPARATOR)
+
+log.info(f"Checking for Subdirectories to search for configs-files to include.")
 for file_or_folder in SEARCH_SUBDIRECTORIES:
     searchdir = os.path.join(EXTREME_ARCHIVE_BASE_DIRECTORY, file_or_folder)
     for target_file in os.listdir(searchdir):
         folder = os.path.join(searchdir, target_file)
         if os.path.isdir(folder):
             folders_containing_configs.append(folder)
+            log.info(f"Folder {folder} found.")
     folders_containing_configs.sort()
-    most_recent_folder = folders_containing_configs[0]
-    relevant_folders_containing_configs.append(most_recent_folder)
-    folders_containing_configs = []   # Set to zero before next loop for next folder
+    try:
+        youngest_folder = folders_containing_configs[0]
+        relevant_folders_containing_configs.append(youngest_folder)
+        log.info(f"Folder {youngest_folder} is the youngest and will be included.")
+
+    except:
+        pass
+        log.error(f"{file_or_folder} should contain subfolders to search, but didn't.")
+    finally:
+        folders_containing_configs = []   # Set to zero before next loop for next folder
 
 log.info(SEPARATOR)
 
