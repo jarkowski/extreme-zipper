@@ -79,17 +79,21 @@ log.info(SEPARATOR)
 
 log.info(f"Removing old zip-files from TFTP path:")
 for file_path in os.listdir(TFTP_PATH):
-    joined_path = os.path.join(TFTP_PATH, file_path)
-    if os.path.exists(joined_path):
-        if RESULTING_ZIP_FILEBASE in joined_path:
-            os.remove(joined_path)
-            log.info(f"Deleted old file: {joined_path}")
-            logWinEvent("INFO", [f"Deleted old file {joined_path}"])
+    joined_path_file = os.path.join(TFTP_PATH, file_path)
+    if os.path.exists(joined_path_file):
+        if RESULTING_ZIP_FILEBASE in joined_path_file:
+            try:
+                os.remove(joined_path_file)
+                log.info(f"Deleted old file: {joined_path_file}")
+                logWinEvent("INFO", [f"Deleted old file {joined_path_file}"])
+            except:
+                log.error(f"Tried to delete {joined_path_file}, but failed.")
+                logWinEvent("ERROR", [f"Tried to delete {joined_path_file} but failed."])       
         else:
-            log.info(f"Skipped file: {joined_path}")
+            log.info(f"Skipped file: {joined_path_file}")
     else:
-        log.error(f"The TFTP-Path {joined_path} could not be found.")
-        logWinEvent("ERROR", [f"The TFTP-Path {joined_path} could not be found."])
+        log.error(f"The TFTP-Path {joined_path_file} could not be found.")
+        logWinEvent("ERROR", [f"The TFTP-Path {joined_path_file} could not be found."])
         
 
 for file_or_folder in SEARCH_SUBDIRECTORIES:
