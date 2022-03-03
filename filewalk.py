@@ -79,24 +79,39 @@ log.info(SEPARATOR)
 
 log.info(f"Removing old zip-files from TFTP path:")
 
+file_delete_count_success = 0
+file_delete_count_failed = 0
+file_delete_count_skipped = 0
+
 if os.path.exists(TFTP_PATH):
     for file_in_tftp_path in os.listdir(TFTP_PATH):
         joined_path_file = os.path.join(TFTP_PATH, file_in_tftp_path)
         if RESULTING_ZIP_FILEBASE in joined_path_file:
             try:
                 os.remove(joined_path_file)
+                file_delete_count_success += 1
                 log.info(f"Deleted old file: {joined_path_file}")
                 logWinEvent("INFO", [f"Deleted old file {joined_path_file}"])
             except:
+                file_delete_count_failed += 1
                 log.error(f"Tried to delete {joined_path_file}, but failed.")
                 logWinEvent("ERROR", [f"Tried to delete {joined_path_file} but failed."])       
         else:
-            log.info(f"Skipped file: {joined_path_file}")
+            file_delete_count_skipped += 1
+            log.info(f"Skipped file {joined_path_file}. "\
+            f"It did not contain '{RESULTING_ZIP_FILEBASE}' and wasn't deleted.")
 else:
     log.error(f"The TFTP-Path {TFTP_PATH} could not be found.")
     logWinEvent("ERROR", [f"The TFTP-Path {TFTP_PATH} could not be found."])
     sys.exit(f"The TFTP-Path {TFTP_PATH} could not be found.")
-        
+
+log.info(f"Old files removed successfully: {file_delete_count_success}")        
+if file_delete_count_failed  > 0:
+    log.error(f"Old files removal failed: {file_delete_count_failed}")
+else:
+    log.info(f"Old files removal failed: 0")    
+log.info(f"Files skipped: {file_delete_count_skipped}")
+
 
 if not (os.path.exists(EXTREME_ARCHIVE_BASE_DIRECTORY)):
     log.error(f"The base directory {EXTREME_ARCHIVE_BASE_DIRECTORY} could not be found.")
