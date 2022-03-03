@@ -98,6 +98,11 @@ else:
     sys.exit(f"The TFTP-Path {TFTP_PATH} could not be found.")
         
 
+if not (os.path.exists(EXTREME_ARCHIVE_BASE_DIRECTORY)):
+    log.error(f"The base directory {EXTREME_ARCHIVE_BASE_DIRECTORY} could not be found.")
+    logWinEvent("ERROR", [f"The base directory {EXTREME_ARCHIVE_BASE_DIRECTORY} could not be found."])
+    sys.exit(f"The base directory {EXTREME_ARCHIVE_BASE_DIRECTORY} could not be found.")
+
 for file_or_folder in SEARCH_SUBDIRECTORIES:
     searchdir = os.path.join(EXTREME_ARCHIVE_BASE_DIRECTORY, file_or_folder)
     for target_file in os.listdir(searchdir):
