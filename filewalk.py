@@ -13,6 +13,8 @@ import zipfile
 import logging
 import logging.handlers
 
+APP_FRIENDLYNAME = r"Filewalk Extreme Zipper script"
+
 def logWinEvent(type, event_id, event_text):
     import win32evtlogutil
     import win32evtlog
@@ -20,7 +22,7 @@ def logWinEvent(type, event_id, event_text):
     if type == "INFO":
         try:
             win32evtlogutil.ReportEvent(
-                "Extreme Zipper script",
+                APP_FRIENDLYNAME,
                 event_id,
                 eventType=win32evtlog.EVENTLOG_INFORMATION_TYPE,
                 strings=event_text,
@@ -30,7 +32,7 @@ def logWinEvent(type, event_id, event_text):
     elif type == "ERROR":
         try:
             win32evtlogutil.ReportEvent(
-                "Extreme Zipper script",
+                APP_FRIENDLYNAME,
                 event_id,
                 eventType=win32evtlog.EVENTLOG_ERROR_TYPE,
                 strings=event_text,
