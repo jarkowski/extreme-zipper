@@ -135,9 +135,9 @@ log.info(SEPARATOR)
 
 try:
     zipfile.ZipFile(filename_for_zipfile)
-    log.info(f"Zip-file {filename_for_zipfile} created.")
+    log.info(f"Zip-file {filename_for_zipfile} tested - Success.")
     log.info(r"Done.")
-    logWinEvent("INFO", [f"Zip-file {filename_for_zipfile} created."])
+    logWinEvent("INFO", [f"Zip-file {filename_for_zipfile} tested - Success."])
 except:
-    log.error(r"Zip file error")
-    logWinEvent("ERROR", "Zip file error")
+    log.error(r"Error while testing the Zip-file.")
+    logWinEvent("ERROR", "Error while testing the Zip-file.")
