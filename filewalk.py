@@ -49,6 +49,7 @@ TFTP_PATH                       = filewalk_config.get("config", "TFTP_PATH")
 RESULTING_ZIP_FILEBASE          = filewalk_config.get("config", "RESULTING_ZIP_FILEBASE")         
 RESULTING_ZIP_EXTENSION         = filewalk_config.get("config", "RESULTING_ZIP_EXTENSION")                   
 LOGFILE                         = filewalk_config.get("config", "LOGFILE") 
+DEBUGLOG_ENABLE                 = filewalk_config.getboolean("config", "DEBUGLOG_ENABLE") 
 SEARCH_SUBDIRECTORIES           = json.loads(filewalk_config.get("config", "SEARCH_SUBDIRECTORIES"))
 SEARCH_FILE_EXTENSION           = json.loads(filewalk_config.get("config", "SEARCH_FILE_EXTENSION"))
 SEPARATOR                       = r"----------------------------------------"
@@ -57,7 +58,10 @@ current_date = str(datetime.now().strftime('%Y_%m_%d'))
 current_date_time = str(datetime.now().strftime('%Y_%m_%d_%H_%M_%S'))
 
 log = logging.getLogger("")
-log.setLevel(logging.DEBUG)
+if DEBUGLOG_ENABLE == True:
+    log.setLevel(logging.DEBUG)
+else:
+    log.setLevel(logging.INFO)
 loghandler_file = logging.handlers.RotatingFileHandler(
     LOGFILE,
     maxBytes=(1024*512),
@@ -75,9 +79,16 @@ folders_containing_configs = []          # List every subdir in SEARCH_SUBDIRECT
 relevant_folders_containing_configs = [] # Most recent enty in every folders_to_search.
 files_to_put_in_zipfile = []             # All files from every relevant folders              
 
+
+log.info(SEPARATOR)
+if DEBUGLOG_ENABLE == True:
+    log.info(r"Starting with DEBUG log enabled.")
+else:
+    log.info(r"Starting with DEBUG log disabled. Set 'DEBUGLOG_ENABLE = True' in filewalk.ini to see all messages.")
+
 log.info(SEPARATOR)
 
-log.info(f"Removing old zip-files from TFTP path:")
+log.info(f"Removing old zip-files from TFTP path")
 
 file_delete_count_success = 0
 file_delete_count_failed = 0
@@ -98,7 +109,7 @@ if os.path.exists(TFTP_PATH):
                 logWinEvent("ERROR", [f"Tried to delete {joined_path_file} but failed."])       
         else:
             file_delete_count_skipped += 1
-            log.info(f"Skipped file {joined_path_file}. "\
+            log.debug(f"Skipped file {joined_path_file}. "\
             f"It did not contain '{RESULTING_ZIP_FILEBASE}' and wasn't deleted.")
 else:
     log.error(f"The TFTP-Path {TFTP_PATH} could not be found.")
@@ -127,22 +138,21 @@ for file_or_folder in SEARCH_SUBDIRECTORIES:
         folder = os.path.join(searchdir, target_file)
         if os.path.isdir(folder):
             folders_containing_configs.append(folder)
-            log.info(f"Folder {folder} found.")
+            log.debug(f"Folder {folder} found.")
     folders_containing_configs.sort()
     try:
         youngest_folder = folders_containing_configs[0]
         relevant_folders_containing_configs.append(youngest_folder)
-        log.info(f"Folder {youngest_folder} is the youngest and will be included.")
-
+        log.debug(f"Folder {youngest_folder} is the youngest and will be included.")
     except:
         pass
-        log.error(f"{file_or_folder} should contain subfolders to search, but didn't.")
+        log.error(f"{file_or_folder} should contain subfolders, but didn't.")
     finally:
         folders_containing_configs = []   # Set to zero before next loop for next folder
 
 log.info(SEPARATOR)
 
-log.info(f"Checking which files to add:")
+log.info(f"Checking which files to add")
 foldercount = len(relevant_folders_containing_configs)
 for k in range(foldercount):
     for target_file in os.listdir(relevant_folders_containing_configs[k]):
@@ -150,7 +160,7 @@ for k in range(foldercount):
             if file_extension in target_file:
                 fqdn_and_filename = os.path.join(relevant_folders_containing_configs[k], target_file)
                 files_to_put_in_zipfile.append(fqdn_and_filename)
-                log.info(f"File {target_file} has correct extension {file_extension}, adding to list.")
+                log.debug(f"File {target_file} has correct extension {file_extension}, adding to list.")
 
 log.info(SEPARATOR)
 
@@ -159,7 +169,7 @@ new_zipfile_to_generate = ZipFile(filename_for_zipfile, mode ="w")
 log.info(f"Generating new zip file {filename_for_zipfile}")
 for n in files_to_put_in_zipfile:
     new_zipfile_to_generate.write(n)
-    log.info(f"Adding config-file {n} to zipfile.")
+    log.debug(f"Adding config-file {n} to zipfile.")
 new_zipfile_to_generate.close
 
 log.info(SEPARATOR)
