@@ -78,9 +78,10 @@ files_to_put_in_zipfile = []             # All files from every relevant folders
 log.info(SEPARATOR)
 
 log.info(f"Removing old zip-files from TFTP path:")
-for file_path in os.listdir(TFTP_PATH):
-    joined_path_file = os.path.join(TFTP_PATH, file_path)
-    if os.path.exists(joined_path_file):
+
+if os.path.exists(TFTP_PATH):
+    for file_in_tftp_path in os.listdir(TFTP_PATH):
+        joined_path_file = os.path.join(TFTP_PATH, file_in_tftp_path)
         if RESULTING_ZIP_FILEBASE in joined_path_file:
             try:
                 os.remove(joined_path_file)
@@ -91,9 +92,10 @@ for file_path in os.listdir(TFTP_PATH):
                 logWinEvent("ERROR", [f"Tried to delete {joined_path_file} but failed."])       
         else:
             log.info(f"Skipped file: {joined_path_file}")
-    else:
-        log.error(f"The TFTP-Path {joined_path_file} could not be found.")
-        logWinEvent("ERROR", [f"The TFTP-Path {joined_path_file} could not be found."])
+else:
+    log.error(f"The TFTP-Path {TFTP_PATH} could not be found.")
+    logWinEvent("ERROR", [f"The TFTP-Path {TFTP_PATH} could not be found."])
+    sys.exit(f"The TFTP-Path {TFTP_PATH} could not be found.")
         
 
 for file_or_folder in SEARCH_SUBDIRECTORIES:
