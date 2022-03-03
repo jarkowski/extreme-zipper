@@ -100,8 +100,8 @@ else:
 
 for file_or_folder in SEARCH_SUBDIRECTORIES:
     searchdir = os.path.join(EXTREME_ARCHIVE_BASE_DIRECTORY, file_or_folder)
-    for entry in os.listdir(searchdir):
-        folder = os.path.join(searchdir, entry)
+    for target_file in os.listdir(searchdir):
+        folder = os.path.join(searchdir, target_file)
         if os.path.isdir(folder):
             folders_containing_configs.append(folder)
     folders_containing_configs.sort()
@@ -114,18 +114,16 @@ log.info(SEPARATOR)
 log.info(f"Checking which files to add:")
 foldercount = len(relevant_folders_containing_configs)
 for k in range(foldercount):
-    for entry in os.listdir(relevant_folders_containing_configs[k]):
+    for target_file in os.listdir(relevant_folders_containing_configs[k]):
         for file_extension in SEARCH_FILE_EXTENSION:
-            if file_extension in entry:
-                fqdn_and_filename = os.path.join(relevant_folders_containing_configs[k], entry)
+            if file_extension in target_file:
+                fqdn_and_filename = os.path.join(relevant_folders_containing_configs[k], target_file)
                 files_to_put_in_zipfile.append(fqdn_and_filename)
-                log.info(f"File {entry} has correct extension {file_extension}, adding to list.")
-
-
-filename_for_zipfile = fr"{TFTP_PATH}\{current_date_time}-{RESULTING_ZIP_FILEBASE}{RESULTING_ZIP_EXTENSION}"
+                log.info(f"File {target_file} has correct extension {file_extension}, adding to list.")
 
 log.info(SEPARATOR)
 
+filename_for_zipfile = fr"{TFTP_PATH}\{current_date_time}-{RESULTING_ZIP_FILEBASE}{RESULTING_ZIP_EXTENSION}"
 new_zipfile_to_generate = ZipFile(filename_for_zipfile, mode ="w")
 log.info(f"Generating new zip file {filename_for_zipfile}")
 for n in files_to_put_in_zipfile:
