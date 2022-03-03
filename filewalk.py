@@ -1,6 +1,6 @@
 """
 Script to extract and zip the most recent configuration backups from Extreme
-Management Center Archive.
+Management Center Archive. #
 """
 
 import configparser
