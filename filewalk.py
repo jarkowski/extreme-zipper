@@ -3,6 +3,7 @@ Script to extract and zip the most recent configuration backups from Extreme
 Management Center Archive. #
 """
 
+
 import configparser
 import json
 import sys
@@ -14,6 +15,7 @@ import logging
 import logging.handlers
 
 APP_FRIENDLYNAME = r"Filewalk Extreme Zipper script"
+
 
 def logWinEvent(type, event_text):
     import win32evtlogutil
@@ -44,18 +46,24 @@ def logWinEvent(type, event_text):
 filewalk_config = configparser.ConfigParser()
 filewalk_config.read("filewalk.ini")
 
-EXTREME_ARCHIVE_BASE_DIRECTORY  = filewalk_config.get("config", "EXTREME_ARCHIVE_BASE_DIRECTORY")
-TFTP_PATH                       = filewalk_config.get("config", "TFTP_PATH") 
-RESULTING_ZIP_FILEBASE          = filewalk_config.get("config", "RESULTING_ZIP_FILEBASE")         
-RESULTING_ZIP_EXTENSION         = filewalk_config.get("config", "RESULTING_ZIP_EXTENSION")                   
-LOGFILE                         = filewalk_config.get("config", "LOGFILE") 
-DEBUGLOG_ENABLE                 = filewalk_config.getboolean("config", "DEBUGLOG_ENABLE") 
-SEARCH_SUBDIRECTORIES           = json.loads(filewalk_config.get("config", "SEARCH_SUBDIRECTORIES"))
-SEARCH_FILE_EXTENSION           = json.loads(filewalk_config.get("config", "SEARCH_FILE_EXTENSION"))
-SEPARATOR                       = r"----------------------------------------"
+EXTREME_ARCHIVE_BASE_DIRECTORY = filewalk_config.get(
+    "config", "EXTREME_ARCHIVE_BASE_DIRECTORY"
+)
+TFTP_PATH = filewalk_config.get("config", "TFTP_PATH")
+RESULTING_ZIP_FILEBASE = filewalk_config.get("config", "RESULTING_ZIP_FILEBASE")
+RESULTING_ZIP_EXTENSION = filewalk_config.get("config", "RESULTING_ZIP_EXTENSION")
+LOGFILE = filewalk_config.get("config", "LOGFILE")
+DEBUGLOG_ENABLE = filewalk_config.getboolean("config", "DEBUGLOG_ENABLE")
+SEARCH_SUBDIRECTORIES = json.loads(
+    filewalk_config.get("config", "SEARCH_SUBDIRECTORIES")
+)
+SEARCH_FILE_EXTENSION = json.loads(
+    filewalk_config.get("config", "SEARCH_FILE_EXTENSION")
+)
+SEPARATOR = r"----------------------------------------"
 
-current_date = str(datetime.now().strftime('%Y_%m_%d'))
-current_date_time = str(datetime.now().strftime('%Y_%m_%d_%H_%M_%S'))
+current_date = str(datetime.now().strftime("%Y_%m_%d"))
+current_date_time = str(datetime.now().strftime("%Y_%m_%d_%H_%M_%S"))
 
 log = logging.getLogger("")
 if DEBUGLOG_ENABLE == True:
@@ -63,28 +71,30 @@ if DEBUGLOG_ENABLE == True:
 else:
     log.setLevel(logging.INFO)
 loghandler_file = logging.handlers.RotatingFileHandler(
-    LOGFILE,
-    maxBytes=(1024*512),
-    backupCount=9
+    LOGFILE, maxBytes=(1024 * 512), backupCount=9
 )
 loghandler_console = logging.StreamHandler(sys.stdout)
-format_of_logmessage_file = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+format_of_logmessage_file = logging.Formatter(
+    "%(asctime)s - %(levelname)s - %(message)s"
+)
 format_of_logmessage_console = logging.Formatter("%(levelname)s - %(message)s")
 loghandler_file.setFormatter(format_of_logmessage_file)
 loghandler_console.setFormatter(format_of_logmessage_console)
 log.addHandler(loghandler_file)
 log.addHandler(loghandler_console)
 
-folders_containing_configs = []          # List every subdir in SEARCH_SUBDIRECTORIES
-relevant_folders_containing_configs = [] # Most recent enty in every folders_to_search.
-files_to_put_in_zipfile = []             # All files from every relevant folders              
+folders_containing_configs = []  # List every subdir in SEARCH_SUBDIRECTORIES
+relevant_folders_containing_configs = []  # Most recent enty in every folders_to_search.
+files_to_put_in_zipfile = []  # All files from every relevant folders
 
 
 log.info(SEPARATOR)
 if DEBUGLOG_ENABLE == True:
     log.info(r"Starting with DEBUG log enabled.")
 else:
-    log.info(r"Starting with DEBUG log disabled. Set 'DEBUGLOG_ENABLE = True' in filewalk.ini to see all messages.")
+    log.info(
+        r"Starting with DEBUG log disabled. Set 'DEBUGLOG_ENABLE = True' in filewalk.ini to see all messages."
+    )
 
 log.info(SEPARATOR)
 
@@ -106,27 +116,36 @@ if os.path.exists(TFTP_PATH):
             except:
                 file_delete_count_failed += 1
                 log.error(f"Tried to delete {joined_path_file}, but failed.")
-                logWinEvent("ERROR", [f"Tried to delete {joined_path_file} but failed."])       
+                logWinEvent(
+                    "ERROR", [f"Tried to delete {joined_path_file} but failed."]
+                )
         else:
             file_delete_count_skipped += 1
-            log.debug(f"Skipped file {joined_path_file}. "\
-            f"It did not contain '{RESULTING_ZIP_FILEBASE}' and wasn't deleted.")
+            log.debug(
+                f"Skipped file {joined_path_file}. "
+                f"It did not contain '{RESULTING_ZIP_FILEBASE}' and wasn't deleted."
+            )
 else:
     log.error(f"The TFTP-Path {TFTP_PATH} could not be found.")
     logWinEvent("ERROR", [f"The TFTP-Path {TFTP_PATH} could not be found."])
     sys.exit(f"The TFTP-Path {TFTP_PATH} could not be found.")
 
-log.info(f"Old files removed successfully: {file_delete_count_success}")        
-if file_delete_count_failed  > 0:
+log.info(f"Old files removed successfully: {file_delete_count_success}")
+if file_delete_count_failed > 0:
     log.error(f"Old files removal failed: {file_delete_count_failed}")
 else:
-    log.info(f"Old files removal failed: 0")    
+    log.info(f"Old files removal failed: 0")
 log.info(f"Files skipped: {file_delete_count_skipped}")
 
 
 if not (os.path.exists(EXTREME_ARCHIVE_BASE_DIRECTORY)):
-    log.error(f"The base directory {EXTREME_ARCHIVE_BASE_DIRECTORY} could not be found.")
-    logWinEvent("ERROR", [f"The base directory {EXTREME_ARCHIVE_BASE_DIRECTORY} could not be found."])
+    log.error(
+        f"The base directory {EXTREME_ARCHIVE_BASE_DIRECTORY} could not be found."
+    )
+    logWinEvent(
+        "ERROR",
+        [f"The base directory {EXTREME_ARCHIVE_BASE_DIRECTORY} could not be found."],
+    )
     sys.exit(f"The base directory {EXTREME_ARCHIVE_BASE_DIRECTORY} could not be found.")
 
 log.info(SEPARATOR)
@@ -148,7 +167,7 @@ for file_or_folder in SEARCH_SUBDIRECTORIES:
         pass
         log.error(f"{file_or_folder} should contain subfolders, but didn't.")
     finally:
-        folders_containing_configs = []   # Set to zero before next loop for next folder
+        folders_containing_configs = []  # Set to zero before next loop for next folder
 
 log.info(SEPARATOR)
 
@@ -158,14 +177,18 @@ for k in range(foldercount):
     for target_file in os.listdir(relevant_folders_containing_configs[k]):
         for file_extension in SEARCH_FILE_EXTENSION:
             if file_extension in target_file:
-                fqdn_and_filename = os.path.join(relevant_folders_containing_configs[k], target_file)
+                fqdn_and_filename = os.path.join(
+                    relevant_folders_containing_configs[k], target_file
+                )
                 files_to_put_in_zipfile.append(fqdn_and_filename)
-                log.debug(f"File {target_file} has correct extension {file_extension}, adding to list.")
+                log.debug(
+                    f"File {target_file} has correct extension {file_extension}, adding to list."
+                )
 
 log.info(SEPARATOR)
 
-filename_for_zipfile = fr"{TFTP_PATH}\{current_date_time}-{RESULTING_ZIP_FILEBASE}{RESULTING_ZIP_EXTENSION}"
-new_zipfile_to_generate = ZipFile(filename_for_zipfile, mode ="w")
+filename_for_zipfile = rf"{TFTP_PATH}\{current_date_time}-{RESULTING_ZIP_FILEBASE}{RESULTING_ZIP_EXTENSION}"
+new_zipfile_to_generate = ZipFile(filename_for_zipfile, mode="w")
 log.info(f"Generating new zip file {filename_for_zipfile}")
 for n in files_to_put_in_zipfile:
     new_zipfile_to_generate.write(n)
