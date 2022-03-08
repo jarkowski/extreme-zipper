@@ -1,8 +1,9 @@
 """
 Script to extract and zip the most recent configuration backups from Extreme
-Management Center Archive.
+Management Center Archive. Parameters are imported from filewalk.ini.
 """
 
+APP_FRIENDLYNAME = r"Filewalk Extreme Zipper script"
 
 import configparser
 import json
@@ -13,8 +14,6 @@ import os
 import zipfile
 import logging
 import logging.handlers
-
-APP_FRIENDLYNAME = r"Filewalk Extreme Zipper script"
 
 
 def logWinEvent(type, event_text):
@@ -52,6 +51,7 @@ EXTREME_ARCHIVE_BASE_DIRECTORY = filewalk_config.get(
 TFTP_PATH = filewalk_config.get("config", "TFTP_PATH")
 RESULTING_ZIP_FILEBASE = filewalk_config.get("config", "RESULTING_ZIP_FILEBASE")
 RESULTING_ZIP_EXTENSION = filewalk_config.get("config", "RESULTING_ZIP_EXTENSION")
+RESULTING_ZIP_USEDATE = filewalk_config.getboolean("config", "RESULTING_ZIP_USEDATE")
 LOGFILE = filewalk_config.get("config", "LOGFILE")
 DEBUGLOG_ENABLE = filewalk_config.getboolean("config", "DEBUGLOG_ENABLE")
 SEARCH_SUBDIRECTORIES = json.loads(
@@ -187,9 +187,18 @@ for k in range(foldercount):
 
 log.info(SEPARATOR)
 
-filename_for_zipfile = rf"{TFTP_PATH}\{current_date_time}-{RESULTING_ZIP_FILEBASE}{RESULTING_ZIP_EXTENSION}"
-new_zipfile_to_generate = ZipFile(filename_for_zipfile, mode="w")
-log.info(f"Generating new zip file {filename_for_zipfile}")
+
+if RESULTING_ZIP_USEDATE == True:
+    filename_for_zipfile = rf"{TFTP_PATH}\{current_date_time}-{RESULTING_ZIP_FILEBASE}{RESULTING_ZIP_EXTENSION}"
+    new_zipfile_to_generate = ZipFile(filename_for_zipfile, mode="w")
+    log.info(f"Generating new zip file {filename_for_zipfile}")
+else:
+    filename_for_zipfile = (
+        rf"{TFTP_PATH}\{RESULTING_ZIP_FILEBASE}{RESULTING_ZIP_EXTENSION}"
+    )
+    new_zipfile_to_generate = ZipFile(filename_for_zipfile, mode="w")
+    log.info(f"Generating new zip file {filename_for_zipfile}")
+
 for n in files_to_put_in_zipfile:
     new_zipfile_to_generate.write(n)
     log.debug(f"Adding config-file {n} to zipfile.")
