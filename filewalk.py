@@ -171,11 +171,15 @@ log.info(SEPARATOR)
 log.info(f"Checking for Subdirectories to search for configs-files to include.")
 for file_or_folder in SEARCH_SUBDIRECTORIES:
     searchdir = os.path.join(EXTREME_ARCHIVE_BASE_DIRECTORY, file_or_folder)
-    for target_file in os.listdir(searchdir):
-        folder = os.path.join(searchdir, target_file)
-        if os.path.isdir(folder):
-            folders_containing_configs.append(folder)
-            log.debug(f"Folder {folder} found.")
+    try:
+        for target_file in os.listdir(searchdir):
+            folder = os.path.join(searchdir, target_file)
+            if os.path.isdir(folder):
+                folders_containing_configs.append(folder)
+                log.debug(f"Folder {folder} found.")
+    except:
+        log.error(f"Folder {searchdir} skipped.")
+
     folders_containing_configs.sort()
     try:
         youngest_folder = folders_containing_configs[0]
