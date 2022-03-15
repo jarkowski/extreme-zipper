@@ -15,6 +15,8 @@ import zipfile
 import logging
 import logging.handlers
 
+# Define function to add log entries to windows event log:
+
 
 def logWinEvent(type, event_text):
     import win32evtlogutil
@@ -42,6 +44,8 @@ def logWinEvent(type, event_text):
             pass
 
 
+# Read config from INI file:
+
 filewalk_config = configparser.ConfigParser()
 filewalk_config.read("filewalk.ini")
 
@@ -63,8 +67,12 @@ SEARCH_FILE_EXTENSION = json.loads(
 )
 SEPARATOR = r"----------------------------------------"
 
+# Prepare strings with current date/time:
+
 current_date = str(datetime.now().strftime("%Y_%m_%d"))
 current_date_time = str(datetime.now().strftime("%Y_%m_%d_%H_%M_%S"))
+
+# Prepare log handler for file logging and console logging:
 
 log = logging.getLogger("")
 if DEBUGLOG_ENABLE == True:
@@ -84,6 +92,8 @@ loghandler_console.setFormatter(format_of_logmessage_console)
 log.addHandler(loghandler_file)
 log.addHandler(loghandler_console)
 
+# Iniitialize lists:
+
 folders_containing_configs = []  # List every subdir in SEARCH_SUBDIRECTORIES
 relevant_folders_containing_configs = []  # Most recent enty in every folders_to_search.
 files_to_put_in_zipfile = []  # All files from every relevant folders
@@ -99,6 +109,9 @@ else:
 
 log.info(SEPARATOR)
 log.info(f"Removing old zip-files from TFTP path")
+
+# Deleting of old zip files, making sure only the files with correct filebase are deleted,
+# preventing deleting of other files in TFTP directory:
 
 file_delete_count_success = 0
 file_delete_count_failed = 0
@@ -137,6 +150,7 @@ else:
     log.info(f"Old files removal failed: 0")
 log.info(f"Files skipped: {file_delete_count_skipped}")
 
+# Checking if configured base directory is usable:
 
 if not (os.path.exists(EXTREME_ARCHIVE_BASE_DIRECTORY)):
     log.error(
@@ -149,6 +163,10 @@ if not (os.path.exists(EXTREME_ARCHIVE_BASE_DIRECTORY)):
     sys.exit(f"The base directory {EXTREME_ARCHIVE_BASE_DIRECTORY} could not be found.")
 
 log.info(SEPARATOR)
+
+# Checking the base directory for configured subdirectories, and the grab the
+# youngest directory in every subdirectory.
+# The result is the list relevant_folders_containing_configs[].
 
 log.info(f"Checking for Subdirectories to search for configs-files to include.")
 for file_or_folder in SEARCH_SUBDIRECTORIES:
@@ -171,6 +189,9 @@ for file_or_folder in SEARCH_SUBDIRECTORIES:
 
 log.info(SEPARATOR)
 
+# Selecting all files from all relevant folders, as long as they match on of
+# the configured file extensions:
+
 log.info(f"Checking which files to add")
 foldercount = len(relevant_folders_containing_configs)
 for k in range(foldercount):
@@ -187,6 +208,7 @@ for k in range(foldercount):
 
 log.info(SEPARATOR)
 
+# Generating the filename for the result ZIP file:
 
 if RESULTING_ZIP_USEDATE == True:
     zipfile_filename = rf"{TFTP_PATH}\{current_date_time}-{RESULTING_ZIP_FILEBASE}{RESULTING_ZIP_EXTENSION}"
@@ -197,12 +219,16 @@ else:
     new_zipfile_to_generate = ZipFile(zipfile_filename, mode="w")
     log.info(f"Generating new zip file {zipfile_filename}")
 
+# Adding files to ZIP file:
+
 for n in files_to_put_in_zipfile:
     new_zipfile_to_generate.write(n)
     log.debug(f"Adding config-file {n} to zipfile.")
 new_zipfile_to_generate.close()
 
 log.info(SEPARATOR)
+
+# Simple test if the generated file is a valif ZIP file:
 
 try:
     zipfile.ZipFile(zipfile_filename)
@@ -211,6 +237,11 @@ try:
 except:
     log.error(r"Error while testing the Zip-file.")
     logWinEvent("ERROR", "Error while testing the Zip-file.")
+    sys.exit(r"Error while testing the Zip-file.")
+
+# Checking that the resulting ZIP file does not exceed the configured limit. If
+# it exceed the limit, add _OVERSIZE_ to the filename. This will prevent the file
+# beeing picked up by the transfer script:
 
 try:
     zipfile_filesize = os.path.getsize(zipfile_filename)
@@ -218,6 +249,7 @@ try:
 except FileNotFoundError:
     log.error(r"Error while checking size of Zip-file.")
     logWinEvent("ERROR", "Error while checking size of Zip-file.")
+    sys.exit(r"Error while checking size of Zip-file.")
 
 if zipfile_filesize >= (RESULTING_ZIP_MAX_BYTES):
     log.error(
