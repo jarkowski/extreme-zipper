@@ -52,6 +52,7 @@ TFTP_PATH = filewalk_config.get("config", "TFTP_PATH")
 RESULTING_ZIP_FILEBASE = filewalk_config.get("config", "RESULTING_ZIP_FILEBASE")
 RESULTING_ZIP_EXTENSION = filewalk_config.get("config", "RESULTING_ZIP_EXTENSION")
 RESULTING_ZIP_USEDATE = filewalk_config.getboolean("config", "RESULTING_ZIP_USEDATE")
+RESULTING_ZIP_MAX_BYTES = filewalk_config.getint("config", "RESULTING_ZIP_MAX_BYTES")
 LOGFILE = filewalk_config.get("config", "LOGFILE")
 DEBUGLOG_ENABLE = filewalk_config.getboolean("config", "DEBUGLOG_ENABLE")
 SEARCH_SUBDIRECTORIES = json.loads(
@@ -97,7 +98,6 @@ else:
     )
 
 log.info(SEPARATOR)
-
 log.info(f"Removing old zip-files from TFTP path")
 
 file_delete_count_success = 0
@@ -189,28 +189,51 @@ log.info(SEPARATOR)
 
 
 if RESULTING_ZIP_USEDATE == True:
-    filename_for_zipfile = rf"{TFTP_PATH}\{current_date_time}-{RESULTING_ZIP_FILEBASE}{RESULTING_ZIP_EXTENSION}"
-    new_zipfile_to_generate = ZipFile(filename_for_zipfile, mode="w")
-    log.info(f"Generating new zip file {filename_for_zipfile}")
+    zipfile_filename = rf"{TFTP_PATH}\{current_date_time}-{RESULTING_ZIP_FILEBASE}{RESULTING_ZIP_EXTENSION}"
+    new_zipfile_to_generate = ZipFile(zipfile_filename, mode="w")
+    log.info(f"Generating new zip file {zipfile_filename}")
 else:
-    filename_for_zipfile = (
-        rf"{TFTP_PATH}\{RESULTING_ZIP_FILEBASE}{RESULTING_ZIP_EXTENSION}"
-    )
-    new_zipfile_to_generate = ZipFile(filename_for_zipfile, mode="w")
-    log.info(f"Generating new zip file {filename_for_zipfile}")
+    zipfile_filename = rf"{TFTP_PATH}\{RESULTING_ZIP_FILEBASE}{RESULTING_ZIP_EXTENSION}"
+    new_zipfile_to_generate = ZipFile(zipfile_filename, mode="w")
+    log.info(f"Generating new zip file {zipfile_filename}")
 
 for n in files_to_put_in_zipfile:
     new_zipfile_to_generate.write(n)
     log.debug(f"Adding config-file {n} to zipfile.")
-new_zipfile_to_generate.close
+new_zipfile_to_generate.close()
 
 log.info(SEPARATOR)
 
 try:
-    zipfile.ZipFile(filename_for_zipfile)
-    log.info(f"Zip-file {filename_for_zipfile} tested - Success.")
-    log.info(r"Done.")
-    logWinEvent("INFO", [f"Zip-file {filename_for_zipfile} tested - Success."])
+    zipfile.ZipFile(zipfile_filename)
+    log.info(f"Zip-file {zipfile_filename} tested - Success.")
+    logWinEvent("INFO", [f"Zip-file {zipfile_filename} tested - Success."])
 except:
     log.error(r"Error while testing the Zip-file.")
     logWinEvent("ERROR", "Error while testing the Zip-file.")
+
+try:
+    zipfile_filesize = os.path.getsize(zipfile_filename)
+    log.debug(f"File size is {zipfile_filesize} bytes.")
+except FileNotFoundError:
+    log.error(r"Error while checking size of Zip-file.")
+    logWinEvent("ERROR", "Error while checking size of Zip-file.")
+
+if zipfile_filesize >= (RESULTING_ZIP_MAX_BYTES):
+    log.error(
+        f"Resulting file exceeds configured limit of {RESULTING_ZIP_MAX_BYTES} bytes, renaming with _OVERSIZE_."
+    )
+    logWinEvent(
+        "ERROR",
+        f"Resulting file exceeds configured limit of {RESULTING_ZIP_MAX_BYTES} bytes, renaming with _OVERSIZE_.",
+    )
+    old_filename = zipfile_filename
+    new_filname = f"{zipfile_filename}_OVERSIZE_"
+    try:
+        os.rename(old_filename, new_filname)
+    except:
+        log.error(f"Error renaming the ZIP file.")
+        logWinEvent(
+            "ERROR",
+            f"Error renaming the ZIP file.",
+        )
