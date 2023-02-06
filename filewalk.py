@@ -180,7 +180,7 @@ for file_or_folder in SEARCH_SUBDIRECTORIES:
     except:
         log.error(f"Folder {searchdir} skipped.")
 
-    folders_containing_configs.sort()
+    folders_containing_configs.sort(reverse=True)
     try:
         youngest_folder = folders_containing_configs[0]
         relevant_folders_containing_configs.append(youngest_folder)
