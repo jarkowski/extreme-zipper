@@ -19,6 +19,7 @@ import logging.handlers
 
 
 def logWinEvent(type, event_text):
+    return
     import win32evtlogutil
     import win32evtlog
 
@@ -215,11 +216,11 @@ log.info(SEPARATOR)
 # Generating the filename for the result ZIP file:
 
 if RESULTING_ZIP_USEDATE == True:
-    zipfile_filename = rf"{TFTP_PATH}\{current_date_time}-{RESULTING_ZIP_FILEBASE}{RESULTING_ZIP_EXTENSION}"
+    zipfile_filename = rf"{TFTP_PATH}/{current_date_time}-{RESULTING_ZIP_FILEBASE}{RESULTING_ZIP_EXTENSION}"
     new_zipfile_to_generate = ZipFile(zipfile_filename, mode="w")
     log.info(f"Generating new zip file {zipfile_filename}")
 else:
-    zipfile_filename = rf"{TFTP_PATH}\{RESULTING_ZIP_FILEBASE}{RESULTING_ZIP_EXTENSION}"
+    zipfile_filename = rf"{TFTP_PATH}/{RESULTING_ZIP_FILEBASE}{RESULTING_ZIP_EXTENSION}"
     new_zipfile_to_generate = ZipFile(zipfile_filename, mode="w")
     log.info(f"Generating new zip file {zipfile_filename}")
 
